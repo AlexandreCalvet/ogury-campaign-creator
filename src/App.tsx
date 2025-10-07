@@ -494,6 +494,7 @@ function OriginalApp() {
                 onChange={(e) => handleInputChange('economic_type', e.target.value)}
               >
                 <option value="cpc">CPC</option>
+                <option value="cpe">CPE</option>
                 <option value="cpm">CPM</option>
                 <option value="cpa">CPA</option>
               </select>
@@ -684,6 +685,7 @@ function OriginalApp() {
                 onChange={(e) => handleLineItemInputChange('economic_type', e.target.value)}
               >
                 <option value="cpc">CPC</option>
+                <option value="cpe">CPE</option>
                 <option value="cpm">CPM</option>
                 <option value="cpa">CPA</option>
               </select>

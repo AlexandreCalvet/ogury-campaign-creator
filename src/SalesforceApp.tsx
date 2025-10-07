@@ -412,6 +412,7 @@ function SalesforceApp() {
                     onChange={(e) => setCampaignData({...campaignData, economic_type: e.target.value})}
                   >
                     <option value="cpc">CPC</option>
+                    <option value="cpe">CPE</option>
                     <option value="cpm">CPM</option>
                     <option value="cpa">CPA</option>
                   </select>
@@ -539,6 +540,7 @@ function SalesforceApp() {
                     onChange={(e) => setLineItemData({...lineItemData, economic_type: e.target.value})}
                   >
                     <option value="cpc">CPC</option>
+                    <option value="cpe">CPE</option>
                     <option value="cpm">CPM</option>
                     <option value="cpa">CPA</option>
                   </select>
