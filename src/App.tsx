@@ -854,7 +854,7 @@ function OriginalApp() {
       {appState.requestBody && (
         <div className="response-section">
           <h3>Request Body Sent</h3>
-          <pre>{appState.requestBody}</pre>
+          <pre>{appState.jsonFormat === 'pretty' ? appState.requestBody : JSON.stringify(JSON.parse(appState.requestBody))}</pre>
         </div>
       )}
     </div>
