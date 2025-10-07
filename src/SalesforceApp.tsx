@@ -90,11 +90,11 @@ function SalesforceApp() {
     country: "FRA",
     initial_budget: 111,
     currency: "USD",
-    note: "Impressions__Impressions_end\nCTR__CTR_END\nVTR__VCR_END\nreal_budget__budget_end\nreal_accomplished__accomplished_end\n3P_discrep_imp__3P_discrep_imp_end\n3P_discrep_acc__3P_discrep_acc_end\nCreative_rendering__Creative_rendering_end",
+    note: "",
     start_date: "2025-07-11",
     end_date: "2025-07-31",
     economic_type: "cpc",
-    pacing: "ASAP",
+    pacing: "EVEN",
     over_delivery: 0,
     timezone_offset_min: 0,
     salesforce_id: "00612346789ABCDFGH",
@@ -415,50 +415,6 @@ function SalesforceApp() {
                     <option value="cpm">CPM</option>
                     <option value="cpa">CPA</option>
                   </select>
-                </div>
-                <div className="form-group">
-                  <label>Pacing</label>
-                  <select
-                    value={campaignData.pacing}
-                    onChange={(e) => setCampaignData({...campaignData, pacing: e.target.value})}
-                  >
-                    <option value="ASAP">ASAP</option>
-                    <option value="EVEN">EVEN</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Over Delivery</label>
-                  <input
-                    type="number"
-                    value={campaignData.over_delivery}
-                    onChange={(e) => setCampaignData({...campaignData, over_delivery: parseInt(e.target.value)})}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Salesforce ID</label>
-                  <input
-                    type="text"
-                    value={campaignData.salesforce_id}
-                    onChange={(e) => setCampaignData({...campaignData, salesforce_id: e.target.value})}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Objective</label>
-                  <select
-                    value={campaignData.objective}
-                    onChange={(e) => setCampaignData({...campaignData, objective: e.target.value})}
-                  >
-                    <option value="branding">Branding</option>
-                    <option value="performance">Performance</option>
-                  </select>
-                </div>
-                <div className="form-group full-width">
-                  <label>Notes</label>
-                  <textarea
-                    value={campaignData.note}
-                    onChange={(e) => setCampaignData({...campaignData, note: e.target.value})}
-                    rows={4}
-                  />
                 </div>
               </div>
               
