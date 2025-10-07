@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import SalesforceApp from './SalesforceApp';
 
 interface CampaignData {
   name: string;
@@ -97,7 +99,7 @@ interface AuthResponse {
   expires_in: number;
 }
 
-function App() {
+function OriginalApp() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authToken, setAuthToken] = useState<string>('');
   const [authStatus, setAuthStatus] = useState<string>('');
@@ -899,6 +901,48 @@ function App() {
         </div>
       )}
     </div>
+  );
+}
+
+// Navigation Component
+function Navigation() {
+  const location = useLocation();
+  
+  return (
+    <nav className="main-navigation">
+      <div className="nav-container">
+        <h1>Ogury Campaign Creator</h1>
+        <div className="nav-links">
+          <Link 
+            to="/" 
+            className={location.pathname === '/' ? 'nav-link active' : 'nav-link'}
+          >
+            Standard Edition
+          </Link>
+          <Link 
+            to="/salesforce" 
+            className={location.pathname === '/salesforce' ? 'nav-link active' : 'nav-link'}
+          >
+            Salesforce Edition
+          </Link>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+// Main App Component with Routing
+function App() {
+  return (
+    <Router>
+      <div className="app-wrapper">
+        <Navigation />
+        <Routes>
+          <Route path="/" element={<OriginalApp />} />
+          <Route path="/salesforce" element={<SalesforceApp />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

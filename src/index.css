@@ -242,4 +242,72 @@ button:focus-visible {
   border-bottom-color: #007bff;
   color: #007bff;
   font-weight: 500;
+}
+
+/* Navigation Styles */
+.app-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.main-navigation {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-container h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: #333333;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-link {
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: #666666;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  color: #007bff;
+  background-color: #f8f9fa;
+}
+
+.nav-link.active {
+  color: #007bff;
+  background-color: #e3f2fd;
+  border: 1px solid #007bff;
+}
+
+/* Update app styles for new layout */
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 } 
