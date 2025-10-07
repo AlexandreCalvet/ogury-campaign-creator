@@ -414,7 +414,7 @@ function SalesforceApp() {
                     <option value="cpc">CPC</option>
                     <option value="cpe">CPE</option>
                     <option value="cpm">CPM</option>
-                    <option value="cpa">CPA</option>
+                    <option value="cpv">CPV</option>
                   </select>
                 </div>
               </div>
@@ -542,7 +542,7 @@ function SalesforceApp() {
                     <option value="cpc">CPC</option>
                     <option value="cpe">CPE</option>
                     <option value="cpm">CPM</option>
-                    <option value="cpa">CPA</option>
+                    <option value="cpv">CPV</option>
                   </select>
                 </div>
                 <div className="form-group">
