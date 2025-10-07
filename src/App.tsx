@@ -2,6 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import SalesforceApp from './SalesforceApp';
+import { AppProvider, useAppContext } from './AppContext';
 
 interface CampaignData {
   name: string;
@@ -93,19 +94,10 @@ interface LineItemData {
   creative_ids: number[];
 }
 
-interface AuthResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-}
 
 function OriginalApp() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authToken, setAuthToken] = useState<string>('');
-  const [authStatus, setAuthStatus] = useState<string>('');
+  const { authState, appState, setAuthState, setAppState, authenticate, resetAuth } = useAppContext();
   const [activeTab, setActiveTab] = useState<'campaign' | 'lineitem'>('campaign');
-  const [clientId, setClientId] = useState<string>('');
-  const [clientSecret, setClientSecret] = useState<string>('');
   
   const [campaignData, setCampaignData] = useState<CampaignData>({
     name: "Test campaign SF",
@@ -209,81 +201,47 @@ function OriginalApp() {
     creative_ids: [24340]
   });
 
-  const [response, setResponse] = useState<any>(null);
-  const [requestBody, setRequestBody] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [jsonFormat, setJsonFormat] = useState<'pretty' | 'raw'>('pretty');
-
-  const authenticate = async () => {
-    if (!clientId || !clientSecret) {
-      setAuthStatus('Please enter both Client ID and Client Secret');
-      return;
-    }
-
-    setIsLoading(true);
-    setAuthStatus('Authenticating...');
-    
-    try {
-      const response = await axios.post(
-        '/oauth/token',
-        'grant_type=client_credentials',
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          auth: {
-            username: clientId,
-            password: clientSecret
-          }
-        }
-      );
-
-      const authData: AuthResponse = response.data;
-      setAuthToken(authData.access_token);
-      setIsAuthenticated(true);
-      setAuthStatus('Authentication successful!');
-    } catch (error: any) {
-      console.error('Authentication error:', error);
-      setAuthStatus(`Authentication failed: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleAuthenticate = async () => {
+    await authenticate(authState.clientId, authState.clientSecret);
   };
 
   const createCampaign = async () => {
-    if (!authToken) {
-      setAuthStatus('Please authenticate first');
+    if (!authState.authToken) {
+      setAuthState({ authStatus: 'Please authenticate first' });
       return;
     }
 
-    setIsLoading(true);
+    setAppState({ isLoading: true });
+    setAuthState({ authStatus: 'Creating campaign...' });
     
     try {
-      const body = jsonFormat === 'pretty' ? JSON.stringify(campaignData, null, 2) : JSON.stringify(campaignData);
-      setRequestBody(body);
+      const body = appState.jsonFormat === 'pretty' ? JSON.stringify(campaignData, null, 2) : JSON.stringify(campaignData);
+      setAppState({ requestBody: body });
       
       const response = await axios.post(
         '/api/ogury-one/campaigns',
         campaignData,
         {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            'Authorization': `Bearer ${authState.authToken}`,
             'Content-Type': 'application/json',
           }
         }
       );
 
-      setResponse(response.data);
+      setAppState({ response: response.data });
+      setAuthState({ authStatus: 'Campaign created successfully!' });
     } catch (error: any) {
       console.error('Campaign creation error:', error);
-      setResponse({
+      setAppState({ response: {
         error: error.message,
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data
-      });
+      }});
+      setAuthState({ authStatus: `Campaign creation failed: ${error.message}` });
     } finally {
-      setIsLoading(false);
+      setAppState({ isLoading: false });
     }
   };
 
@@ -302,39 +260,42 @@ function OriginalApp() {
   };
 
   const createLineItem = async () => {
-    if (!authToken) {
-      setAuthStatus('Please authenticate first');
+    if (!authState.authToken) {
+      setAuthState({ authStatus: 'Please authenticate first' });
       return;
     }
 
-    setIsLoading(true);
+    setAppState({ isLoading: true });
+    setAuthState({ authStatus: 'Creating line item...' });
     
     try {
-      const body = jsonFormat === 'pretty' ? JSON.stringify(lineItemData, null, 2) : JSON.stringify(lineItemData);
-      setRequestBody(body);
+      const body = appState.jsonFormat === 'pretty' ? JSON.stringify(lineItemData, null, 2) : JSON.stringify(lineItemData);
+      setAppState({ requestBody: body });
       
       const response = await axios.post(
         '/trafficking/api/line-items',
         lineItemData,
         {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            'Authorization': `Bearer ${authState.authToken}`,
             'Content-Type': 'application/json',
           }
         }
       );
 
-      setResponse(response.data);
+      setAppState({ response: response.data });
+      setAuthState({ authStatus: 'Line item created successfully!' });
     } catch (error: any) {
       console.error('Line item creation error:', error);
-      setResponse({
+      setAppState({ response: {
         error: error.message,
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data
-      });
+      }});
+      setAuthState({ authStatus: `Line item creation failed: ${error.message}` });
     } finally {
-      setIsLoading(false);
+      setAppState({ isLoading: false });
     }
   };
 
@@ -346,15 +307,15 @@ function OriginalApp() {
       <div className="auth-section">
         <h2>Authentication</h2>
         
-        {!isAuthenticated && (
+        {!authState.isAuthenticated && (
           <div className="auth-form">
             <div className="form-row">
               <div className="form-group">
                 <label>Client ID</label>
                 <input
                   type="text"
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
+                  value={authState.clientId}
+                  onChange={(e) => setAuthState({ clientId: e.target.value })}
                   placeholder="Enter your Client ID"
                 />
               </div>
@@ -362,8 +323,8 @@ function OriginalApp() {
                 <label>Client Secret</label>
                 <input
                   type="password"
-                  value={clientSecret}
-                  onChange={(e) => setClientSecret(e.target.value)}
+                  value={authState.clientSecret}
+                  onChange={(e) => setAuthState({ clientSecret: e.target.value })}
                   placeholder="Enter your Client Secret"
                 />
               </div>
@@ -373,33 +334,29 @@ function OriginalApp() {
         
         <div className="auth-buttons">
           <button 
-            onClick={authenticate} 
-            disabled={isLoading || isAuthenticated}
+            onClick={handleAuthenticate} 
+            disabled={appState.isLoading || authState.isAuthenticated}
           >
-            {isAuthenticated ? 'Authenticated' : 'Authenticate with OAuth2'}
+            {authState.isAuthenticated ? 'Authenticated' : 'Authenticate with OAuth2'}
           </button>
-          {isAuthenticated && (
+          {authState.isAuthenticated && (
             <button 
-              onClick={() => {
-                setIsAuthenticated(false);
-                setAuthToken('');
-                setAuthStatus('');
-              }}
+              onClick={resetAuth}
               style={{ marginLeft: '10px', backgroundColor: '#dc3545' }}
             >
               Reset Authentication
             </button>
           )}
         </div>
-        {authStatus && (
-          <div className={`status ${isAuthenticated ? 'success' : 'info'}`}>
-            {authStatus}
+        {authState.authStatus && (
+          <div className={`status ${authState.isAuthenticated ? 'success' : 'info'}`}>
+            {authState.authStatus}
           </div>
         )}
       </div>
 
       {/* Tabs */}
-      {isAuthenticated && (
+      {authState.isAuthenticated && (
         <div className="tabs">
           <button 
             className={`tab ${activeTab === 'campaign' ? 'active' : ''}`}
@@ -417,7 +374,7 @@ function OriginalApp() {
       )}
 
       {/* Campaign Form Section */}
-      {isAuthenticated && activeTab === 'campaign' && (
+      {authState.isAuthenticated && activeTab === 'campaign' && (
         <div className="form-section">
           <h2>Create Campaign</h2>
           
@@ -596,16 +553,16 @@ function OriginalApp() {
 
           <button 
             onClick={createCampaign} 
-            disabled={isLoading}
+            disabled={appState.isLoading}
             style={{ marginTop: '20px', width: '100%' }}
           >
-            {isLoading ? 'Creating Campaign...' : 'Create Campaign'}
+            {appState.isLoading ? 'Creating Campaign...' : 'Create Campaign'}
           </button>
         </div>
       )}
 
       {/* Line Item Form Section */}
-      {isAuthenticated && activeTab === 'lineitem' && (
+      {authState.isAuthenticated && activeTab === 'lineitem' && (
         <div className="form-section">
           <h2>Create Line Item</h2>
           
@@ -865,10 +822,10 @@ function OriginalApp() {
 
           <button 
             onClick={createLineItem} 
-            disabled={isLoading}
+            disabled={appState.isLoading}
             style={{ marginTop: '20px', width: '100%' }}
           >
-            {isLoading ? 'Creating Line Item...' : 'Create Line Item'}
+            {appState.isLoading ? 'Creating Line Item...' : 'Create Line Item'}
           </button>
         </div>
       )}
@@ -877,8 +834,8 @@ function OriginalApp() {
       <div className="json-format-selector">
         <label>JSON Format: </label>
         <select
-          value={jsonFormat}
-          onChange={(e) => setJsonFormat(e.target.value as 'pretty' | 'raw')}
+          value={appState.jsonFormat}
+          onChange={(e) => setAppState({ jsonFormat: e.target.value as 'pretty' | 'raw' })}
         >
           <option value="pretty">Pretty (Human Readable)</option>
           <option value="raw">Raw (Minified)</option>
@@ -886,18 +843,18 @@ function OriginalApp() {
       </div>
 
       {/* Response Section */}
-      {response && (
+      {appState.response && (
         <div className="response-section">
           <h3>Server Response</h3>
-          <pre>{jsonFormat === 'pretty' ? JSON.stringify(response, null, 2) : JSON.stringify(response)}</pre>
+          <pre>{appState.jsonFormat === 'pretty' ? JSON.stringify(appState.response, null, 2) : JSON.stringify(appState.response)}</pre>
         </div>
       )}
 
       {/* Request Body Section */}
-      {requestBody && (
+      {appState.requestBody && (
         <div className="response-section">
           <h3>Request Body Sent</h3>
-          <pre>{requestBody}</pre>
+          <pre>{appState.requestBody}</pre>
         </div>
       )}
     </div>
@@ -934,15 +891,17 @@ function Navigation() {
 // Main App Component with Routing
 function App() {
   return (
-    <Router>
-      <div className="app-wrapper">
-        <Navigation />
-        <Routes>
-          <Route path="/" element={<OriginalApp />} />
-          <Route path="/salesforce" element={<SalesforceApp />} />
-        </Routes>
-      </div>
-    </Router>
+    <AppProvider>
+      <Router>
+        <div className="app-wrapper">
+          <Navigation />
+          <Routes>
+            <Route path="/" element={<OriginalApp />} />
+            <Route path="/salesforce" element={<SalesforceApp />} />
+          </Routes>
+        </div>
+      </Router>
+    </AppProvider>
   );
 }
 

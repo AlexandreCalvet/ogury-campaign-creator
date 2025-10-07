@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { useAppContext } from './AppContext';
 
 interface CampaignData {
   name: string;
@@ -73,19 +74,10 @@ interface LineItemData {
   creative_ids: number[];
 }
 
-interface AuthResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-}
 
 function SalesforceApp() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authToken, setAuthToken] = useState<string>('');
-  const [authStatus, setAuthStatus] = useState<string>('');
+  const { authState, appState, setAuthState, setAppState, authenticate, resetAuth } = useAppContext();
   const [activeTab, setActiveTab] = useState<'campaign' | 'lineitem'>('campaign');
-  const [clientId, setClientId] = useState<string>('');
-  const [clientSecret, setClientSecret] = useState<string>('');
   
   const [campaignData, setCampaignData] = useState<CampaignData>({
     name: "Test campaign SF",
@@ -161,55 +153,18 @@ function SalesforceApp() {
     creative_ids: [24340]
   });
 
-  const [response, setResponse] = useState<any>(null);
-  const [requestBody, setRequestBody] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [jsonFormat, setJsonFormat] = useState<'pretty' | 'raw'>('pretty');
-
-  const authenticate = async () => {
-    if (!clientId || !clientSecret) {
-      setAuthStatus('Please enter both Client ID and Client Secret');
-      return;
-    }
-
-    setIsLoading(true);
-    setAuthStatus('Authenticating...');
-    
-    try {
-      const response = await axios.post(
-        '/oauth/token',
-        'grant_type=client_credentials',
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          auth: {
-            username: clientId,
-            password: clientSecret
-          }
-        }
-      );
-
-      const authData: AuthResponse = response.data;
-      setAuthToken(authData.access_token);
-      setIsAuthenticated(true);
-      setAuthStatus('Authentication successful!');
-    } catch (error: any) {
-      console.error('Authentication error:', error);
-      setAuthStatus(`Authentication failed: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleAuthenticate = async () => {
+    await authenticate(authState.clientId, authState.clientSecret);
   };
 
   const createCampaign = async () => {
-    if (!authToken) {
-      setAuthStatus('Please authenticate first');
+    if (!authState.authToken) {
+      setAuthState({ authStatus: 'Please authenticate first' });
       return;
     }
 
-    setIsLoading(true);
-    setAuthStatus('Creating campaign...');
+    setAppState({ isLoading: true });
+    setAuthState({ authStatus: 'Creating campaign...' });
     
     try {
       const response = await axios.post(
@@ -218,30 +173,32 @@ function SalesforceApp() {
         {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`,
+            'Authorization': `Bearer ${authState.authToken}`,
           }
         }
       );
 
-      setResponse(response.data);
-      setRequestBody(JSON.stringify(campaignData, null, 2));
-      setAuthStatus('Campaign created successfully!');
+      setAppState({ 
+        response: response.data,
+        requestBody: JSON.stringify(campaignData, null, 2)
+      });
+      setAuthState({ authStatus: 'Campaign created successfully!' });
     } catch (error: any) {
       console.error('Campaign creation error:', error);
-      setAuthStatus(`Campaign creation failed: ${error.message}`);
+      setAuthState({ authStatus: `Campaign creation failed: ${error.message}` });
     } finally {
-      setIsLoading(false);
+      setAppState({ isLoading: false });
     }
   };
 
   const createLineItem = async () => {
-    if (!authToken) {
-      setAuthStatus('Please authenticate first');
+    if (!authState.authToken) {
+      setAuthState({ authStatus: 'Please authenticate first' });
       return;
     }
 
-    setIsLoading(true);
-    setAuthStatus('Creating line item...');
+    setAppState({ isLoading: true });
+    setAuthState({ authStatus: 'Creating line item...' });
     
     try {
       const response = await axios.post(
@@ -250,19 +207,21 @@ function SalesforceApp() {
         {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`,
+            'Authorization': `Bearer ${authState.authToken}`,
           }
         }
       );
 
-      setResponse(response.data);
-      setRequestBody(JSON.stringify(lineItemData, null, 2));
-      setAuthStatus('Line item created successfully!');
+      setAppState({ 
+        response: response.data,
+        requestBody: JSON.stringify(lineItemData, null, 2)
+      });
+      setAuthState({ authStatus: 'Line item created successfully!' });
     } catch (error: any) {
       console.error('Line item creation error:', error);
-      setAuthStatus(`Line item creation failed: ${error.message}`);
+      setAuthState({ authStatus: `Line item creation failed: ${error.message}` });
     } finally {
-      setIsLoading(false);
+      setAppState({ isLoading: false });
     }
   };
 
@@ -277,14 +236,14 @@ function SalesforceApp() {
       <div className="auth-section">
         <h2>Authentication</h2>
         
-        {!isAuthenticated && (
+        {!authState.isAuthenticated && (
           <div className="auth-form">
             <div className="form-group">
               <label>Client ID</label>
               <input
                 type="text"
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
+                value={authState.clientId}
+                onChange={(e) => setAuthState({ clientId: e.target.value })}
                 placeholder="Enter your Client ID"
               />
             </div>
@@ -292,8 +251,8 @@ function SalesforceApp() {
               <label>Client Secret</label>
               <input
                 type="password"
-                value={clientSecret}
-                onChange={(e) => setClientSecret(e.target.value)}
+                value={authState.clientSecret}
+                onChange={(e) => setAuthState({ clientSecret: e.target.value })}
                 placeholder="Enter your Client Secret"
               />
             </div>
@@ -302,19 +261,15 @@ function SalesforceApp() {
         
         <div className="auth-buttons">
           <button
-            onClick={authenticate} 
-            disabled={isLoading || isAuthenticated}
+            onClick={handleAuthenticate} 
+            disabled={appState.isLoading || authState.isAuthenticated}
             className="auth-button"
           >
-            {isAuthenticated ? 'Authenticated' : 'Authenticate with OAuth2'}
+            {authState.isAuthenticated ? 'Authenticated' : 'Authenticate with OAuth2'}
           </button>
-          {isAuthenticated && (
+          {authState.isAuthenticated && (
             <button
-              onClick={() => {
-                setIsAuthenticated(false);
-                setAuthToken('');
-                setAuthStatus('');
-              }}
+              onClick={resetAuth}
               className="reset-button"
             >
               Reset Authentication
@@ -322,14 +277,14 @@ function SalesforceApp() {
           )}
         </div>
         
-        {authStatus && (
-          <div className={`status ${isAuthenticated ? 'success' : 'info'}`}>
-            {authStatus}
+        {authState.authStatus && (
+          <div className={`status ${authState.isAuthenticated ? 'success' : 'info'}`}>
+            {authState.authStatus}
           </div>
         )}
       </div>
 
-      {isAuthenticated && (
+      {authState.isAuthenticated && (
         <div className="main-content">
           {/* Tab Navigation */}
           <div className="tab-navigation">
@@ -348,7 +303,7 @@ function SalesforceApp() {
           </div>
 
           {/* Campaign Form */}
-          {isAuthenticated && activeTab === 'campaign' && (
+          {authState.isAuthenticated && activeTab === 'campaign' && (
             <div className="form-section">
               <h2>Create Campaign</h2>
               <div className="form-grid">
@@ -509,16 +464,16 @@ function SalesforceApp() {
               
               <button
                 onClick={createCampaign}
-                disabled={isLoading}
+                disabled={appState.isLoading}
                 className="create-button"
               >
-                {isLoading ? 'Creating...' : 'Create Campaign'}
+                {appState.isLoading ? 'Creating...' : 'Create Campaign'}
               </button>
             </div>
           )}
 
           {/* Line Item Form */}
-          {isAuthenticated && activeTab === 'lineitem' && (
+          {authState.isAuthenticated && activeTab === 'lineitem' && (
             <div className="form-section">
               <h2>Create Line Item</h2>
               <div className="form-grid">
@@ -757,42 +712,42 @@ function SalesforceApp() {
               
               <button
                 onClick={createLineItem}
-                disabled={isLoading}
+                disabled={appState.isLoading}
                 className="create-button"
               >
-                {isLoading ? 'Creating...' : 'Create Line Item'}
+                {appState.isLoading ? 'Creating...' : 'Create Line Item'}
               </button>
             </div>
           )}
 
           {/* Debug Information */}
-          {(requestBody || response) && (
+          {(appState.requestBody || appState.response) && (
             <div className="debug-section">
               <h3>Debug Information</h3>
               
               <div className="debug-controls">
                 <button
-                  onClick={() => setJsonFormat(jsonFormat === 'pretty' ? 'raw' : 'pretty')}
+                  onClick={() => setAppState({ jsonFormat: appState.jsonFormat === 'pretty' ? 'raw' : 'pretty' })}
                   className="format-button"
                 >
-                  {jsonFormat === 'pretty' ? 'Raw JSON' : 'Pretty JSON'}
+                  {appState.jsonFormat === 'pretty' ? 'Raw JSON' : 'Pretty JSON'}
                 </button>
               </div>
               
-              {requestBody && (
+              {appState.requestBody && (
                 <div className="debug-item">
                   <h4>Request Body</h4>
                   <pre className="json-display">
-                    {jsonFormat === 'pretty' ? requestBody : JSON.stringify(JSON.parse(requestBody))}
+                    {appState.jsonFormat === 'pretty' ? appState.requestBody : JSON.stringify(JSON.parse(appState.requestBody))}
                   </pre>
                 </div>
               )}
               
-              {response && (
+              {appState.response && (
                 <div className="debug-item">
                   <h4>Response</h4>
                   <pre className="json-display">
-                    {jsonFormat === 'pretty' ? JSON.stringify(response, null, 2) : JSON.stringify(response)}
+                    {appState.jsonFormat === 'pretty' ? JSON.stringify(appState.response, null, 2) : JSON.stringify(appState.response)}
                   </pre>
                 </div>
               )}
