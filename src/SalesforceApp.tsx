@@ -348,7 +348,7 @@ function SalesforceApp() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Target Cost</label>
+                  <label>Effective Price per Unit (Opportunity Product)</label>
                   <input
                     type="number"
                     step="0.001"
@@ -366,7 +366,7 @@ function SalesforceApp() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Country</label>
+                  <label>Team Country (Opportunity)</label>
                   <input
                     type="text"
                     value={campaignData.country}
@@ -374,7 +374,7 @@ function SalesforceApp() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Initial Budget</label>
+                  <label>Total Budget (Opportunity Product)</label>
                   <input
                     type="number"
                     value={campaignData.initial_budget}
@@ -382,7 +382,7 @@ function SalesforceApp() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Currency</label>
+                  <label>Opportunity Currency (Opportunity)</label>
                   <input
                     type="text"
                     value={campaignData.currency}
