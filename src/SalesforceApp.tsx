@@ -308,7 +308,7 @@ function SalesforceApp() {
               <h2>Create Campaign</h2>
               <div className="form-grid">
                 <div className="form-group">
-                  <label>Campaign Name</label>
+                  <label>Opportunity Product name (Opportunity Product)</label>
                   <input
                     type="text"
                     value={campaignData.name}
@@ -725,13 +725,15 @@ function SalesforceApp() {
             <div className="debug-section">
               <h3>Debug Information</h3>
               
-              <div className="debug-controls">
-                <button
-                  onClick={() => setAppState({ jsonFormat: appState.jsonFormat === 'pretty' ? 'raw' : 'pretty' })}
-                  className="format-button"
+              <div className="json-format-selector">
+                <label>JSON Format: </label>
+                <select
+                  value={appState.jsonFormat}
+                  onChange={(e) => setAppState({ jsonFormat: e.target.value as 'pretty' | 'raw' })}
                 >
-                  {appState.jsonFormat === 'pretty' ? 'Raw JSON' : 'Pretty JSON'}
-                </button>
+                  <option value="pretty">Pretty (Human Readable)</option>
+                  <option value="raw">Raw (Minified)</option>
+                </select>
               </div>
               
               {appState.requestBody && (
