@@ -720,39 +720,31 @@ function SalesforceApp() {
             </div>
           )}
 
-          {/* Debug Information */}
-          {(appState.requestBody || appState.response) && (
-            <div className="debug-section">
-              <h3>Debug Information</h3>
-              
-              <div className="json-format-selector">
-                <label>JSON Format: </label>
-                <select
-                  value={appState.jsonFormat}
-                  onChange={(e) => setAppState({ jsonFormat: e.target.value as 'pretty' | 'raw' })}
-                >
-                  <option value="pretty">Pretty (Human Readable)</option>
-                  <option value="raw">Raw (Minified)</option>
-                </select>
-              </div>
-              
-              {appState.requestBody && (
-                <div className="debug-item">
-                  <h4>Request Body</h4>
-                  <pre className="json-display">
-                    {appState.jsonFormat === 'pretty' ? appState.requestBody : JSON.stringify(JSON.parse(appState.requestBody))}
-                  </pre>
-                </div>
-              )}
-              
-              {appState.response && (
-                <div className="debug-item">
-                  <h4>Response</h4>
-                  <pre className="json-display">
-                    {appState.jsonFormat === 'pretty' ? JSON.stringify(appState.response, null, 2) : JSON.stringify(appState.response)}
-                  </pre>
-                </div>
-              )}
+          {/* JSON Format Selector */}
+          <div className="json-format-selector">
+            <label>JSON Format: </label>
+            <select
+              value={appState.jsonFormat}
+              onChange={(e) => setAppState({ jsonFormat: e.target.value as 'pretty' | 'raw' })}
+            >
+              <option value="pretty">Pretty (Human Readable)</option>
+              <option value="raw">Raw (Minified)</option>
+            </select>
+          </div>
+
+          {/* Response Section */}
+          {appState.response && (
+            <div className="response-section">
+              <h3>Server Response</h3>
+              <pre>{appState.jsonFormat === 'pretty' ? JSON.stringify(appState.response, null, 2) : JSON.stringify(appState.response)}</pre>
+            </div>
+          )}
+
+          {/* Request Body Section */}
+          {appState.requestBody && (
+            <div className="response-section">
+              <h3>Request Body Sent</h3>
+              <pre>{appState.requestBody}</pre>
             </div>
           )}
         </div>
