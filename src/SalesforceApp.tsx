@@ -409,7 +409,26 @@ function SalesforceApp() {
                   <label>Economic Type</label>
                   <select
                     value={campaignData.economic_type}
-                    onChange={(e) => setCampaignData({...campaignData, economic_type: e.target.value})}
+                    onChange={(e) => {
+                      const economicType = e.target.value;
+                      let ctrValue = campaignData.ctr; // Keep existing CTR by default
+                      
+                      // Auto-set CTR based on economic type
+                      switch (economicType) {
+                        case 'cpm':
+                          ctrValue = 0.9;
+                          break;
+                        case 'cpc':
+                        case 'cpe':
+                          ctrValue = 0.01;
+                          break;
+                        case 'cpv':
+                          ctrValue = 0.6;
+                          break;
+                      }
+                      
+                      setCampaignData({...campaignData, economic_type: economicType, ctr: ctrValue});
+                    }}
                   >
                     <option value="cpc">CPC</option>
                     <option value="cpe">CPE</option>
@@ -537,7 +556,26 @@ function SalesforceApp() {
                   <label>Economic Type</label>
                   <select
                     value={lineItemData.economic_type}
-                    onChange={(e) => setLineItemData({...lineItemData, economic_type: e.target.value})}
+                    onChange={(e) => {
+                      const economicType = e.target.value;
+                      let ctrValue = lineItemData.ctr; // Keep existing CTR by default
+                      
+                      // Auto-set CTR based on economic type
+                      switch (economicType) {
+                        case 'cpm':
+                          ctrValue = 0.9;
+                          break;
+                        case 'cpc':
+                        case 'cpe':
+                          ctrValue = 0.01;
+                          break;
+                        case 'cpv':
+                          ctrValue = 0.6;
+                          break;
+                      }
+                      
+                      setLineItemData({...lineItemData, economic_type: economicType, ctr: ctrValue});
+                    }}
                   >
                     <option value="cpc">CPC</option>
                     <option value="cpe">CPE</option>

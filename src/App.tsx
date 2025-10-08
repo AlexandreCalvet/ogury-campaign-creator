@@ -246,17 +246,63 @@ function OriginalApp() {
   };
 
   const handleInputChange = (field: keyof CampaignData, value: any) => {
-    setCampaignData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setCampaignData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+      
+      // Auto-set CTR based on economic type
+      if (field === 'economic_type') {
+        switch (value) {
+          case 'cpm':
+            newData.ctr = 0.9;
+            break;
+          case 'cpc':
+          case 'cpe':
+            newData.ctr = 0.01;
+            break;
+          case 'cpv':
+            newData.ctr = 0.6;
+            break;
+          default:
+            // Keep existing CTR value
+            break;
+        }
+      }
+      
+      return newData;
+    });
   };
 
   const handleLineItemInputChange = (field: keyof LineItemData, value: any) => {
-    setLineItemData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setLineItemData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+      
+      // Auto-set CTR based on economic type
+      if (field === 'economic_type') {
+        switch (value) {
+          case 'cpm':
+            newData.ctr = 0.9;
+            break;
+          case 'cpc':
+          case 'cpe':
+            newData.ctr = 0.01;
+            break;
+          case 'cpv':
+            newData.ctr = 0.6;
+            break;
+          default:
+            // Keep existing CTR value
+            break;
+        }
+      }
+      
+      return newData;
+    });
   };
 
   const createLineItem = async () => {
