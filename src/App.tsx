@@ -97,7 +97,7 @@ interface LineItemData {
 
 function OriginalApp() {
   const { authState, appState, setAuthState, setAppState, authenticate, resetAuth } = useAppContext();
-  const [activeTab, setActiveTab] = useState<'campaign' | 'lineitem'>('campaign');
+  const [activeTab, setActiveTab] = useState<'campaign' | 'lineitem' | 'managers'>('campaign');
   
   const [campaignData, setCampaignData] = useState<CampaignData>({
     name: "Test campaign SF",
@@ -200,6 +200,9 @@ function OriginalApp() {
     allow_gdpr_macro: false,
     creative_ids: [24340]
   });
+
+  const [managerEmail, setManagerEmail] = useState<string>('simone.brotz@ogury.co');
+  const [managerType, setManagerType] = useState<'bi' | 'sales_manager'>('bi');
 
   const handleAuthenticate = async () => {
     await authenticate(authState.clientId, authState.clientSecret);
@@ -345,6 +348,46 @@ function OriginalApp() {
     }
   };
 
+  const getManagers = async () => {
+    if (!authState.authToken) {
+      setAuthState({ authStatus: 'Please authenticate first' });
+      return;
+    }
+
+    if (!managerEmail) {
+      setAuthState({ authStatus: 'Please enter an email address' });
+      return;
+    }
+
+    setAppState({ isLoading: true });
+    setAuthState({ authStatus: 'Fetching managers...' });
+    
+    try {
+      const url = `https://gateway-tyk-oss.devc.cloud.ogury.io/trafficking/api/managers/${managerType}?email=${encodeURIComponent(managerEmail)}`;
+      
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': `Bearer ${authState.authToken}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      setAppState({ response: response.data });
+      setAuthState({ authStatus: 'Managers fetched successfully!' });
+    } catch (error: any) {
+      console.error('Get managers error:', error);
+      setAppState({ response: {
+        error: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      }});
+      setAuthState({ authStatus: `Get managers failed: ${error.message}` });
+    } finally {
+      setAppState({ isLoading: false });
+    }
+  };
+
   return (
     <div className="container">
       <h1>Ogury Campaign Creator</h1>
@@ -415,6 +458,12 @@ function OriginalApp() {
             onClick={() => setActiveTab('lineitem')}
           >
             Line Item
+          </button>
+          <button 
+            className={`tab ${activeTab === 'managers' ? 'active' : ''}`}
+            onClick={() => setActiveTab('managers')}
+          >
+            Managers
           </button>
         </div>
       )}
@@ -874,6 +923,43 @@ function OriginalApp() {
             style={{ marginTop: '20px', width: '100%' }}
           >
             {appState.isLoading ? 'Creating Line Item...' : 'Create Line Item'}
+          </button>
+        </div>
+      )}
+
+      {/* Managers Section */}
+      {authState.isAuthenticated && activeTab === 'managers' && (
+        <div className="form-section">
+          <h2>Get Managers</h2>
+          
+          <div className="form-row">
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                value={managerEmail}
+                onChange={(e) => setManagerEmail(e.target.value)}
+                placeholder="Enter manager email"
+              />
+            </div>
+            <div className="form-group">
+              <label>Manager Type</label>
+              <select
+                value={managerType}
+                onChange={(e) => setManagerType(e.target.value as 'bi' | 'sales_manager')}
+              >
+                <option value="bi">BI Manager</option>
+                <option value="sales_manager">Sales Manager</option>
+              </select>
+            </div>
+          </div>
+
+          <button 
+            onClick={getManagers} 
+            disabled={appState.isLoading}
+            style={{ marginTop: '20px', width: '100%' }}
+          >
+            {appState.isLoading ? 'Fetching Managers...' : 'Get Managers'}
           </button>
         </div>
       )}
