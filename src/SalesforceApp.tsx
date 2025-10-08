@@ -357,15 +357,6 @@ function SalesforceApp() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>CTR</label>
-                  <input
-                    type="number"
-                    step="0.001"
-                    value={campaignData.ctr}
-                    onChange={(e) => setCampaignData({...campaignData, ctr: parseFloat(e.target.value)})}
-                  />
-                </div>
-                <div className="form-group">
                   <label>Team Country (Opportunity)</label>
                   <input
                     type="text"
@@ -533,15 +524,6 @@ function SalesforceApp() {
                     step="0.001"
                     value={lineItemData.target_cost}
                     onChange={(e) => setLineItemData({...lineItemData, target_cost: parseFloat(e.target.value)})}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>CTR</label>
-                  <input
-                    type="number"
-                    step="0.001"
-                    value={lineItemData.ctr}
-                    onChange={(e) => setLineItemData({...lineItemData, ctr: parseFloat(e.target.value)})}
                   />
                 </div>
                 <div className="form-group">
